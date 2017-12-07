@@ -2,7 +2,7 @@ package com.kevincylee.stock.bean;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class StockInfoResponse {
+public class TwseStockInfoResponse {
 
 	public StockInfoArray[] stockInfoArray;
 

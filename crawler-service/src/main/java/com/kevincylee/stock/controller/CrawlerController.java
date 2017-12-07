@@ -19,7 +19,7 @@ public class CrawlerController {
 	
 	@RequestMapping(value = "/crawler/StockInfoCrawler")
 	public String getStockInfo() throws Exception {
-		return "GOOD";
+		return crawlerService.getStockInfo();
 	}
 	
 }

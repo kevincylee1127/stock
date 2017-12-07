@@ -15,8 +15,10 @@ public class StockInfo {
 	@Id
 	public String id;
 	public Integer stockNumber; // 股票代號
+	@DateTimeFormat(iso = ISO.DATE)
+	public Date transactionDate; // 交易日期(yyyy-MM-dd)
 	@DateTimeFormat(iso = ISO.DATE_TIME)
-	public Date transactionDateTime; // 交易日期 時間(yyyy-MM-dd'T'HH:mm:ss.SSS)
+	public Date transactionDateTime; // 交易日期(yyyy-MM-dd HH:mm:ss.SSSZ)
 	public BigDecimal priceOfOpen; // 開盤
 	public BigDecimal priceOfYesterday; // 昨收
 	public BigDecimal priceOfLowest; // 最低
@@ -50,6 +52,14 @@ public class StockInfo {
 
 	public void setStockNumber(Integer stockNumber) {
 		this.stockNumber = stockNumber;
+	}
+
+	public Date getTransactionDate() {
+		return transactionDate;
+	}
+
+	public void setTransactionDate(Date transactionDate) {
+		this.transactionDate = transactionDate;
 	}
 
 	public Date getTransactionDateTime() {

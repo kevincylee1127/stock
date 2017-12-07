@@ -8,7 +8,8 @@ import com.kevincylee.stock.entity.StockInfoPiece;
 public class StockInfoRequest {
 
 	public Integer stockNumber; // 股票代號
-	public String transactionDateTime; // 交易日期 時間(yyyy-MM-dd'T'HH:mm:ss)
+	public String transactionDate; // 交易日期(yyyy-MM-dd)
+	public String transactionTime; // 揭示時間(HH:mm:ss)
 	public BigDecimal priceOfOpen; // 開盤
 	public BigDecimal priceOfYesterday; // 昨收
 	public BigDecimal priceOfLowest; // 最低
@@ -28,12 +29,20 @@ public class StockInfoRequest {
 		this.stockNumber = stockNumber;
 	}
 
-	public String getTransactionDateTime() {
-		return transactionDateTime;
+	public String getTransactionDate() {
+		return transactionDate;
 	}
 
-	public void setTransactionDateTime(String transactionDateTime) {
-		this.transactionDateTime = transactionDateTime;
+	public void setTransactionDate(String transactionDate) {
+		this.transactionDate = transactionDate;
+	}
+
+	public String getTransactionTime() {
+		return transactionTime;
+	}
+
+	public void setTransactionTime(String transactionTime) {
+		this.transactionTime = transactionTime;
 	}
 
 	public BigDecimal getPriceOfOpen() {

@@ -8,19 +8,19 @@ public class Stock {
 
 	@Id
 	public String id;
-	public String marketType; // 市場別 1:上市 2:上櫃
+	public String marketType; // 市場別 1:上市 tsm 2:上櫃
 	public Integer stockNumber; // 股票代號
 	public String stockName; // 股票名稱
 	public String isinCode; // 國際證券辨識號碼(ISIN Code)
 	public Date onMarketDate; // 上市日
-	public StockIndustryType industryType; // 產業別
+	public String industryType; // 產業別
 
 	public Stock() {
 		super();
 	}
 
 	public Stock(String id, String marketType, Integer stockNumber, String stockName, String isinCode,
-			Date onMarketDate, StockIndustryType industryType) {
+			Date onMarketDate, String industryType) {
 		super();
 		this.id = id;
 		this.marketType = marketType;
@@ -79,11 +79,11 @@ public class Stock {
 		this.onMarketDate = onMarketDate;
 	}
 
-	public StockIndustryType getIndustryType() {
+	public String getIndustryType() {
 		return industryType;
 	}
 
-	public void setIndustryType(StockIndustryType industryType) {
+	public void setIndustryType(String industryType) {
 		this.industryType = industryType;
 	}
 

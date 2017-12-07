@@ -11,14 +11,15 @@ import org.springframework.format.annotation.DateTimeFormat.ISO;
 public class StockInfoPiece {
 
 	@Id
-	public Integer id;
+	public String id;
 	public Integer stockNumber; // 股票代號
 	@DateTimeFormat(iso = ISO.DATE)
 	public Date transactionDate; // 交易日期(yyyy-MM-dd)
-	public BigDecimal buyPrice; // 五檔價量 - 買進價格
-	public Integer buyQuantity; // 五檔價量 - 買進數量
-	public BigDecimal sellPrice; // 五檔價量 - 賣出價格
-	public Integer sellQuantity; // 五檔價量 - 賣出數量
+	@DateTimeFormat(iso = ISO.DATE_TIME)
+	public Date transactionDateTime; // 交易日期(yyyy-MM-dd HH:mm:ss.SSSZ)
+	public String transactionType; // 交易類型 (BUY, SELL)
+	public BigDecimal price; // 五檔價量 - 價格
+	public Integer quantity; // 五檔價量 - 數量
 	@CreatedDate
 	public Date createDateTime; // 建立時間
 
@@ -26,22 +27,22 @@ public class StockInfoPiece {
 		super();
 	}
 
-	public StockInfoPiece(Integer stockNumber, Date transactionDate, BigDecimal buyPrice, Integer buyQuantity,
-			BigDecimal sellPrice, Integer sellQuantity) {
+	public StockInfoPiece(Integer stockNumber, Date transactionDate, Date transactionDateTime, String transactionType,
+			BigDecimal price, Integer quantity) {
 		super();
 		this.stockNumber = stockNumber;
 		this.transactionDate = transactionDate;
-		this.buyPrice = buyPrice;
-		this.buyQuantity = buyQuantity;
-		this.sellPrice = sellPrice;
-		this.sellQuantity = sellQuantity;
+		this.transactionDateTime = transactionDateTime;
+		this.transactionType = transactionType;
+		this.price = price;
+		this.quantity = quantity;
 	}
 
-	public Integer getId() {
+	public String getId() {
 		return id;
 	}
 
-	public void setId(Integer id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 
@@ -53,44 +54,36 @@ public class StockInfoPiece {
 		this.stockNumber = stockNumber;
 	}
 
-	public Date getTransactionDate() {
-		return transactionDate;
+	public Date getTransactionDateTime() {
+		return transactionDateTime;
 	}
 
-	public void setTransactionDate(Date transactionDate) {
-		this.transactionDate = transactionDate;
+	public void setTransactionDateTime(Date transactionDateTime) {
+		this.transactionDateTime = transactionDateTime;
 	}
 
-	public BigDecimal getBuyPrice() {
-		return buyPrice;
+	public String getTransactionType() {
+		return transactionType;
 	}
 
-	public void setBuyPrice(BigDecimal buyPrice) {
-		this.buyPrice = buyPrice;
+	public void setTransactionType(String transactionType) {
+		this.transactionType = transactionType;
 	}
 
-	public Integer getBuyQuantity() {
-		return buyQuantity;
+	public BigDecimal getPrice() {
+		return price;
 	}
 
-	public void setBuyQuantity(Integer buyQuantity) {
-		this.buyQuantity = buyQuantity;
+	public void setPrice(BigDecimal price) {
+		this.price = price;
 	}
 
-	public BigDecimal getSellPrice() {
-		return sellPrice;
+	public Integer getQuantity() {
+		return quantity;
 	}
 
-	public void setSellPrice(BigDecimal sellPrice) {
-		this.sellPrice = sellPrice;
-	}
-
-	public Integer getSellQuantity() {
-		return sellQuantity;
-	}
-
-	public void setSellQuantity(Integer sellQuantity) {
-		this.sellQuantity = sellQuantity;
+	public void setQuantity(Integer quantity) {
+		this.quantity = quantity;
 	}
 
 	public Date getCreateDateTime() {
