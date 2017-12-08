@@ -14,6 +14,7 @@ public class Stock {
 	public String isinCode; // 國際證券辨識號碼(ISIN Code)
 	public Date onMarketDate; // 上市日
 	public String industryType; // 產業別
+	public Date processDate; // 抓取完成日期(遞減 越抓越之前)
 
 	public Stock() {
 		super();
@@ -85,6 +86,14 @@ public class Stock {
 
 	public void setIndustryType(String industryType) {
 		this.industryType = industryType;
+	}
+
+	public Date getProcessDate() {
+		return processDate;
+	}
+
+	public void setProcessDate(Date processDate) {
+		this.processDate = processDate;
 	}
 
 }

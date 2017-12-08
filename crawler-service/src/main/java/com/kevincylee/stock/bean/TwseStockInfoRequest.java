@@ -1,6 +1,6 @@
 package com.kevincylee.stock.bean;
 
-import java.util.Date;
+import java.util.Calendar;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -16,7 +16,7 @@ public class TwseStockInfoRequest {
 	@JsonProperty(value = "delay")
 	public Integer delaySeconds = 3000; // 1s = 1000
 	@JsonProperty(value = "_")
-	public Long timeStamp = new Date().getTime();
+	public Long timeStamp = Calendar.getInstance().getTimeInMillis();
 
 	public String getStockCode() {
 		return stockCode;

@@ -68,8 +68,9 @@ public class StockService {
 	public @ResponseBody String addStockInfo(StockInfoRequest requestBody) throws ParseException {
 
 		List<StockInfoPiece> stockInfoPieces = new ArrayList<StockInfoPiece>();
-		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-		DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		List<StockInfoPiece> stockInfoPiecesToDB = new ArrayList<StockInfoPiece>();
+		DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+		DateFormat dateTimeFormat = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
 
 		Date transactionDate = dateFormat.parse(requestBody.getTransactionDate());
 		Date transactionDateTime = dateTimeFormat
@@ -93,9 +94,7 @@ public class StockService {
 		stockInfo.setPrice(requestBody.getPrice());
 		stockInfo.setTurnover(requestBody.getTurnover());
 		stockInfo.setTotalTurnover(requestBody.getTotalTurnover());
-		stockInfo.setStockInfoPieces(requestBody.getStockInfoPieces());
-
-		stockInfoRepository.save(stockInfo);
+		stockInfo.setStockInfoPieces(stockInfoPiecesToDB);
 
 		// 儲存五檔紀錄
 		List<StockInfoPiece> inDBInfoPieces = stockInfoPieceRepository
@@ -106,10 +105,10 @@ public class StockService {
 						transactionDateTime, stockInfoPiece.getTransactionType(), stockInfoPiece.getPrice(),
 						stockInfoPiece.getQuantity()));
 			}
-			stockInfoPieceRepository.save(stockInfoPieces);
+			stockInfoPiecesToDB = stockInfoPieceRepository.save(stockInfoPieces);
 		}
-
-		System.out.println(stockInfo.getTransactionDateTime());
+		
+		stockInfoRepository.save(stockInfo);
 
 		return "SUCCESS";
 	}

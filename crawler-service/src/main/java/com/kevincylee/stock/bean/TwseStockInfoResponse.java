@@ -1,12 +1,16 @@
 package com.kevincylee.stock.bean;
 
+import java.util.Arrays;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class TwseStockInfoResponse {
 
-	public StockInfoArray[] stockInfoArray;
-
 	@JsonProperty(value = "msgArray")
+	private StockInfoArray[] stockInfoArray;
+
 	public StockInfoArray[] getStockInfoArray() {
 		return stockInfoArray;
 	}
@@ -15,100 +19,116 @@ public class TwseStockInfoResponse {
 		this.stockInfoArray = stockInfoArray;
 	}
 
-	public class StockInfoArray {
-		public String stockNumber; // 股票代號
-		public String transactionDate; // 交易日期(YYYYMMDD)
-		public String transactionTime;// 交易時間(HH:MI:SS)
-		public String priceOfOpen; // 開盤
-		public String priceOfYesterday; // 昨收
-		public String priceOfLowest; // 最低
-		public String priceOfHighest; // 最高
-		public String priceOfLimitDown; // 跌停價
-		public String priceOfLimitUp; // 漲停價
-		public String price; // 當盤成交價
-		public String turnover; // 當盤成交量
-		public String totalTurnover; // 累積成交量
-		public String fivePiecesOfBuyPrice; // 五檔價量 - 買進價格(從高到低，以_分隔資料)
-		public String fivePiecesOfBuyQuantity; // 五檔價量 - 買進數量(配合b，以_分隔資料)
-		public String fivePiecesOfSellPrice; // 五檔價量 - 賣出價格(從高到低，以_分隔資料)
-		public String fivePiecesOfSellQuantity; // 五檔價量 - 賣出數量(配合a，以_分隔資料)
-
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	public static class StockInfoArray {
 		@JsonProperty(value = "c")
+		private String stockNumber; // 股票代號
+
+		@JsonProperty(value = "d")
+		private String transactionDate; // 交易日期(YYYYMMDD)
+
+		@JsonProperty(value = "t")
+		private String transactionTime;// 交易時間(HH:MI:SS)
+
+		@JsonProperty(value = "o")
+		private String priceOfOpen; // 開盤
+
+		@JsonProperty(value = "y")
+		private String priceOfYesterday; // 昨收
+
+		@JsonProperty(value = "l")
+		private String priceOfLowest; // 最低
+
+		@JsonProperty(value = "h")
+		private String priceOfHighest; // 最高
+
+		@JsonProperty(value = "w")
+		private String priceOfLimitDown; // 跌停價
+
+		@JsonProperty(value = "u")
+		private String priceOfLimitUp; // 漲停價
+
+		@JsonProperty(value = "z")
+		private String price; // 當盤成交價
+
+		@JsonProperty(value = "tv")
+		private String turnover; // 當盤成交量
+
+		@JsonProperty(value = "v")
+		private String totalTurnover; // 累積成交量
+
+		@JsonProperty(value = "b")
+		private String fivePiecesOfBuyPrice; // 五檔價量 - 買進價格(從高到低，以_分隔資料)
+
+		@JsonProperty(value = "g")
+		private String fivePiecesOfBuyQuantity; // 五檔價量 - 買進數量(配合b，以_分隔資料)
+
+		@JsonProperty(value = "a")
+		private String fivePiecesOfSellPrice; // 五檔價量 - 賣出價格(從高到低，以_分隔資料)
+
+		@JsonProperty(value = "f")
+		private String fivePiecesOfSellQuantity; // 五檔價量 - 賣出數量(配合a，以_分隔資料)
+
 		public String getStockNumber() {
 			return stockNumber;
 		}
 
-		@JsonProperty(value = "d")
 		public String getTransactionDate() {
 			return transactionDate;
 		}
 
-		@JsonProperty(value = "t")
 		public String getTransactionTime() {
 			return transactionTime;
 		}
 
-		@JsonProperty(value = "o")
 		public String getPriceOfOpen() {
 			return priceOfOpen;
 		}
 
-		@JsonProperty(value = "y")
 		public String getPriceOfYesterday() {
 			return priceOfYesterday;
 		}
 
-		@JsonProperty(value = "l")
 		public String getPriceOfLowest() {
 			return priceOfLowest;
 		}
 
-		@JsonProperty(value = "h")
 		public String getPriceOfHighest() {
 			return priceOfHighest;
 		}
 
-		@JsonProperty(value = "w")
 		public String getPriceOfLimitDown() {
 			return priceOfLimitDown;
 		}
 
-		@JsonProperty(value = "u")
 		public String getPriceOfLimitUp() {
 			return priceOfLimitUp;
 		}
 
-		@JsonProperty(value = "z")
 		public String getPrice() {
 			return price;
 		}
 
-		@JsonProperty(value = "tv")
 		public String getTurnover() {
 			return turnover;
 		}
 
-		@JsonProperty(value = "v")
 		public String getTotalTurnover() {
 			return totalTurnover;
 		}
 
-		@JsonProperty(value = "b")
 		public String getFivePiecesOfBuyPrice() {
 			return fivePiecesOfBuyPrice;
 		}
 
-		@JsonProperty(value = "g")
 		public String getFivePiecesOfBuyQuantity() {
 			return fivePiecesOfBuyQuantity;
 		}
 
-		@JsonProperty(value = "a")
 		public String getFivePiecesOfSellPrice() {
 			return fivePiecesOfSellPrice;
 		}
 
-		@JsonProperty(value = "f")
 		public String getFivePiecesOfSellQuantity() {
 			return fivePiecesOfSellQuantity;
 		}
@@ -176,6 +196,24 @@ public class TwseStockInfoResponse {
 		public void setFivePiecesOfSellQuantity(String fivePiecesOfSellQuantity) {
 			this.fivePiecesOfSellQuantity = fivePiecesOfSellQuantity;
 		}
+
+		@Override
+		public String toString() {
+			return "StockInfoArray [stockNumber=" + stockNumber + ", transactionDate=" + transactionDate
+					+ ", transactionTime=" + transactionTime + ", priceOfOpen=" + priceOfOpen + ", priceOfYesterday="
+					+ priceOfYesterday + ", priceOfLowest=" + priceOfLowest + ", priceOfHighest=" + priceOfHighest
+					+ ", priceOfLimitDown=" + priceOfLimitDown + ", priceOfLimitUp=" + priceOfLimitUp + ", price="
+					+ price + ", turnover=" + turnover + ", totalTurnover=" + totalTurnover + ", fivePiecesOfBuyPrice="
+					+ fivePiecesOfBuyPrice + ", fivePiecesOfBuyQuantity=" + fivePiecesOfBuyQuantity
+					+ ", fivePiecesOfSellPrice=" + fivePiecesOfSellPrice + ", fivePiecesOfSellQuantity="
+					+ fivePiecesOfSellQuantity + "]";
+		}
+
+	}
+
+	@Override
+	public String toString() {
+		return "TwseStockInfoResponse [stockInfoArray=" + Arrays.toString(stockInfoArray) + "]";
 	}
 
 }

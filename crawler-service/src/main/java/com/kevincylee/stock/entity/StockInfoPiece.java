@@ -54,6 +54,14 @@ public class StockInfoPiece {
 		this.stockNumber = stockNumber;
 	}
 
+	public Date getTransactionDate() {
+		return transactionDate;
+	}
+
+	public void setTransactionDate(Date transactionDate) {
+		this.transactionDate = transactionDate;
+	}
+
 	public Date getTransactionDateTime() {
 		return transactionDateTime;
 	}
