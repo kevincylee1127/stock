@@ -1,7 +1,5 @@
 package com.kevincylee.stock.bean;
 
-import java.util.Arrays;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -196,24 +194,5 @@ public class TwseStockInfoResponse {
 		public void setFivePiecesOfSellQuantity(String fivePiecesOfSellQuantity) {
 			this.fivePiecesOfSellQuantity = fivePiecesOfSellQuantity;
 		}
-
-		@Override
-		public String toString() {
-			return "StockInfoArray [stockNumber=" + stockNumber + ", transactionDate=" + transactionDate
-					+ ", transactionTime=" + transactionTime + ", priceOfOpen=" + priceOfOpen + ", priceOfYesterday="
-					+ priceOfYesterday + ", priceOfLowest=" + priceOfLowest + ", priceOfHighest=" + priceOfHighest
-					+ ", priceOfLimitDown=" + priceOfLimitDown + ", priceOfLimitUp=" + priceOfLimitUp + ", price="
-					+ price + ", turnover=" + turnover + ", totalTurnover=" + totalTurnover + ", fivePiecesOfBuyPrice="
-					+ fivePiecesOfBuyPrice + ", fivePiecesOfBuyQuantity=" + fivePiecesOfBuyQuantity
-					+ ", fivePiecesOfSellPrice=" + fivePiecesOfSellPrice + ", fivePiecesOfSellQuantity="
-					+ fivePiecesOfSellQuantity + "]";
-		}
-
 	}
-
-	@Override
-	public String toString() {
-		return "TwseStockInfoResponse [stockInfoArray=" + Arrays.toString(stockInfoArray) + "]";
-	}
-
 }

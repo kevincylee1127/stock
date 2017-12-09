@@ -33,8 +33,10 @@ import com.kevincylee.stock.bean.StockRequest;
 import com.kevincylee.stock.bean.TwseStockInfoRequest;
 import com.kevincylee.stock.bean.TwseStockInfoResponse;
 import com.kevincylee.stock.bean.TwseStockInfoResponse.StockInfoArray;
+import com.kevincylee.stock.entity.ConfigProperty;
 import com.kevincylee.stock.entity.Stock;
 import com.kevincylee.stock.entity.StockInfoPiece;
+import com.kevincylee.stock.repository.ConfigPropertyRepository;
 import com.kevincylee.stock.repository.StockRepository;
 
 @Service
@@ -45,6 +47,9 @@ public class CrawlerService {
 
 	@Autowired
 	private StockRepository stockRepository;
+
+	@Autowired
+	private ConfigPropertyRepository configPropertyRepository;
 
 	private static final Logger logger = LoggerFactory.getLogger(CrawlerService.class);
 
@@ -88,15 +93,22 @@ public class CrawlerService {
 	}
 
 	public String getStockInfo(String targetDate) throws Exception {
+		if (targetDate == null) {
+			DateFormat df = new SimpleDateFormat("yyyyMMdd");
+			Calendar targetDateForHistory = Calendar.getInstance();
+			targetDate = df.format(targetDateForHistory.getTime());
+			if (targetDateForHistory.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY
+					|| targetDateForHistory.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY) {
+				return targetDate + " is holiday";
+			}
+		}
+		Long stocksCount = stockRepository.count();
+		// Long stocksCount = (long) 12;
+		Integer pageStart = 0;
+		Integer pageSize = Integer.parseInt(configPropertyRepository.findByCode("pageSize").getValue());
 
-		// Long stocksCount = stockRepository.count();
-		Long stocksCount = (long) 12;
-		Integer indexStart = 0;
-		Integer pageSize = 5;
-
-		while (indexStart * pageSize <= stocksCount.intValue()
-				|| ((indexStart - 1) * pageSize < stocksCount && stocksCount < (indexStart) * pageSize)) {
-			Pageable pageable = new PageRequest(indexStart, pageSize);
+		while (pageStart * pageSize <= stocksCount.intValue()) {
+			Pageable pageable = new PageRequest(pageStart, pageSize);
 			Page<Stock> stocksForPage = stockRepository.findAll(pageable);
 			List<Stock> stocks = stocksForPage.getContent();
 
@@ -106,15 +118,15 @@ public class CrawlerService {
 			twseStockInfoRequest.setStockCode(stockTargets);
 			ResponseEntity<?> response = doGet(twseStockInfoRequest.toParamString(), String.class);
 
-			System.out.println("==> Date " + targetDate);
-			System.out.println("==> Start from " + indexStart * pageSize);
-			System.out.println("==>" + stockTargets);
+			logger.info("==> Date " + targetDate);
+			logger.info("==> Start from " + pageStart * pageSize);
+			logger.info("==>" + stockTargets);
 
 			ObjectMapper mapper = new ObjectMapper();
 			try {
 				TwseStockInfoResponse stockInfos = mapper.readValue(response.getBody().toString().trim(),
 						TwseStockInfoResponse.class);
-				System.out.println(stockInfos.toString());
+				logger.info(mapper.writeValueAsString(stockInfos));
 
 				for (StockInfoArray stockInfo : stockInfos.getStockInfoArray()) {
 					StockInfoRequest infoReq = new StockInfoRequest();
@@ -132,10 +144,10 @@ public class CrawlerService {
 					infoReq.setTurnover(checkNullForInteger(stockInfo.getTurnover()));
 					infoReq.setTotalTurnover(checkNullForInteger(stockInfo.getTotalTurnover()));
 
-					String[] buyPrice = stockInfo.getFivePiecesOfBuyPrice().split("_");
-					String[] buyQuantity = stockInfo.getFivePiecesOfBuyQuantity().split("_");
-					String[] sellPrice = stockInfo.getFivePiecesOfSellPrice().split("_");
-					String[] sellQuantity = stockInfo.getFivePiecesOfSellQuantity().split("_");
+					String[] buyPrice = checkIsNull(stockInfo.getFivePiecesOfBuyPrice()).split("_");
+					String[] buyQuantity = checkIsNull(stockInfo.getFivePiecesOfBuyQuantity()).split("_");
+					String[] sellPrice = checkIsNull(stockInfo.getFivePiecesOfSellPrice()).split("_");
+					String[] sellQuantity = checkIsNull(stockInfo.getFivePiecesOfSellQuantity()).split("_");
 
 					DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 					DateFormat dateTimeFormat = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
@@ -146,11 +158,15 @@ public class CrawlerService {
 										.parse(stockInfo.getTransactionDate() + " " + stockInfo.getTransactionTime()),
 								"BUY", checkNullForBigDecimal(buyPrice[i]), checkNullForInteger(buyQuantity[i])));
 
+					}
+
+					for (int i = 0; i < sellPrice.length; i++) {
 						stockInfoPieces.add(new StockInfoPiece(checkNullForInteger(stockInfo.getStockNumber()),
 								dateFormat.parse(stockInfo.getTransactionDate()),
 								dateTimeFormat
 										.parse(stockInfo.getTransactionDate() + " " + stockInfo.getTransactionTime()),
 								"SELL", checkNullForBigDecimal(sellPrice[i]), checkNullForInteger(sellQuantity[i])));
+
 					}
 					infoReq.setStockInfoPieces(stockInfoPieces);
 
@@ -162,16 +178,59 @@ public class CrawlerService {
 				throw e;
 			}
 
-			indexStart++;
+			pageStart++;
 			try {
 				Thread.sleep(5000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
-		System.out.println("Done...");
+		logger.info("Done...");
 
 		return "SUCCESS!!";
+	}
+
+	public String getStockHistoryInfo(String startDate, String targetDate) throws Exception {
+		DateFormat df = new SimpleDateFormat("yyyyMMdd");
+		Calendar startDateForHistory = Calendar.getInstance();
+		Calendar targetDateForHistory = Calendar.getInstance();
+		if (startDate == null) {
+			try {
+				startDate = configPropertyRepository.findByCode("startDateForHistory").getValue();
+				startDateForHistory.setTime(df.parse(startDate));
+			} catch (Exception e) {
+				configPropertyRepository
+						.save(new ConfigProperty("startDateForHistory", df.format(startDateForHistory.getTime())));
+			}
+		}
+
+		if (targetDate == null) {
+			try {
+				targetDate = configPropertyRepository.findByCode("targetDateForHistory").getValue();
+				targetDateForHistory.setTime(df.parse(targetDate));
+			} catch (Exception e) {
+				targetDateForHistory.add(Calendar.YEAR, -5);
+				configPropertyRepository
+						.save(new ConfigProperty("targetDateForHistory", df.format(targetDateForHistory.getTime())));
+			}
+		}
+
+		while (startDateForHistory.after(targetDateForHistory)) {
+			getStockInfo(df.format(startDateForHistory.getTime()));
+			startDateForHistory.add(Calendar.DATE, -1);
+			ConfigProperty startDateForHistoryConfig = configPropertyRepository.findByCode("startDateForHistory");
+			startDateForHistoryConfig.setValue(df.format(startDateForHistory.getTime()));
+			configPropertyRepository.save(startDateForHistoryConfig);
+		}
+
+		return "SUCCESS!!";
+	}
+
+	private static String checkIsNull(String x) {
+		if (null != x) {
+			return x;
+		}
+		return "";
 	}
 
 	private static BigDecimal checkNullForBigDecimal(String x) {
@@ -180,7 +239,7 @@ public class CrawlerService {
 			try {
 				z = new BigDecimal(x);
 			} catch (NumberFormatException e) {
-				System.out.println("Wrong number");
+				logger.info(x + " it's not a BigDecimal type");
 			}
 			return z;
 		}
@@ -193,27 +252,11 @@ public class CrawlerService {
 			try {
 				z = Integer.parseInt(x);
 			} catch (NumberFormatException e) {
-				System.out.println("Wrong number");
+				logger.info(x + " it's not a Integer type");
 			}
 			return z;
 		}
 		return null;
-	}
-
-	public String getStockHistoryInfo(String targetDate) throws Exception {
-
-		Calendar nowCal = Calendar.getInstance();
-		nowCal.add(Calendar.DAY_OF_WEEK, -1);
-
-		DateFormat df = new SimpleDateFormat("yyyyMMdd");
-		Calendar targetCal = Calendar.getInstance();
-		targetCal.setTime(df.parse(targetDate));
-
-		while (nowCal.before(targetCal)) {
-			getStockInfo(df.format(nowCal));
-		}
-
-		return "SUCCESS!!";
 	}
 
 	private String getStockTargets(List<Stock> stocks) {

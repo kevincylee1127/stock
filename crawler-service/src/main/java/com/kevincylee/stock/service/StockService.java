@@ -13,10 +13,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.kevincylee.stock.bean.StockInfoRequest;
 import com.kevincylee.stock.bean.StockRequest;
+import com.kevincylee.stock.entity.ConfigProperty;
 import com.kevincylee.stock.entity.Stock;
 import com.kevincylee.stock.entity.StockIndustryType;
 import com.kevincylee.stock.entity.StockInfo;
 import com.kevincylee.stock.entity.StockInfoPiece;
+import com.kevincylee.stock.repository.ConfigPropertyRepository;
 import com.kevincylee.stock.repository.IndustryTypeRepository;
 import com.kevincylee.stock.repository.StockInfoPieceRepository;
 import com.kevincylee.stock.repository.StockInfoRepository;
@@ -36,6 +38,9 @@ public class StockService {
 
 	@Autowired
 	StockInfoPieceRepository stockInfoPieceRepository;
+
+	@Autowired
+	private ConfigPropertyRepository configPropertyRepository;
 
 	public @ResponseBody String addStock(StockRequest requestBody) throws ParseException {
 		// 取得股票資訊 檢查重複
@@ -94,7 +99,6 @@ public class StockService {
 		stockInfo.setPrice(requestBody.getPrice());
 		stockInfo.setTurnover(requestBody.getTurnover());
 		stockInfo.setTotalTurnover(requestBody.getTotalTurnover());
-		stockInfo.setStockInfoPieces(stockInfoPiecesToDB);
 
 		// 儲存五檔紀錄
 		List<StockInfoPiece> inDBInfoPieces = stockInfoPieceRepository
@@ -107,9 +111,21 @@ public class StockService {
 			}
 			stockInfoPiecesToDB = stockInfoPieceRepository.save(stockInfoPieces);
 		}
-		
+		stockInfo.setStockInfoPieces(stockInfoPiecesToDB);
+
 		stockInfoRepository.save(stockInfo);
 
+		return "SUCCESS";
+	}
+
+	public String addConfingProperty(String code, String value) {
+		ConfigProperty configProperty = configPropertyRepository.findByCode(code);
+		if (configProperty == null) {
+			configProperty = new ConfigProperty(code, value);
+		} else {
+			configProperty.setValue(value);
+		}
+		configPropertyRepository.save(configProperty);
 		return "SUCCESS";
 	}
 

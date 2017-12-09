@@ -1,7 +1,6 @@
 package com.kevincylee.stock.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,13 +18,13 @@ public class CrawlerController {
 	}
 
 	@RequestMapping(value = "/crawler/getStockHistoryInfo")
-	public String getStockHistoryInfo(@PathVariable String targetDate) throws Exception {
-		return crawlerService.getStockHistoryInfo(targetDate);
+	public String getStockHistoryInfo(String startDate, String targetDate) throws Exception {
+		return crawlerService.getStockHistoryInfo(startDate, targetDate);
 	}
 
 	// dataDate =yyyyMMdd
-	@RequestMapping(value = "/crawler/getStockInfo/{targetDate}")
-	public String getStockInfo(@PathVariable String targetDate) throws Exception {
+	@RequestMapping(value = "/crawler/getStockInfo")
+	public String getStockInfo(String targetDate) throws Exception {
 		return crawlerService.getStockInfo(targetDate);
 	}
 
