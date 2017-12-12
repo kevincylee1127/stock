@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.kevincylee.stock.bean.ConfingPropertyRequest;
 import com.kevincylee.stock.bean.StockInfoRequest;
 import com.kevincylee.stock.bean.StockRequest;
 import com.kevincylee.stock.entity.ConfigProperty;
@@ -118,12 +119,12 @@ public class StockService {
 		return "SUCCESS";
 	}
 
-	public String addConfingProperty(String code, String value) {
-		ConfigProperty configProperty = configPropertyRepository.findByCode(code);
+	public String addConfingProperty(ConfingPropertyRequest requestBody) {
+		ConfigProperty configProperty = configPropertyRepository.findByCode(requestBody.getCode());
 		if (configProperty == null) {
-			configProperty = new ConfigProperty(code, value);
+			configProperty = new ConfigProperty(requestBody.getCode(), requestBody.getValue());
 		} else {
-			configProperty.setValue(value);
+			configProperty.setValue(requestBody.getValue());
 		}
 		configPropertyRepository.save(configProperty);
 		return "SUCCESS";

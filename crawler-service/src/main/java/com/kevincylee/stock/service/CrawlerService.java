@@ -24,6 +24,8 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -57,17 +59,18 @@ public class CrawlerService {
 	private final String suffix = ".tw";
 	private final String conjunction = "%7C";
 
-	// 台灣證交所 上市證券國際證券辨識號碼
-	final String isinUrl = "http://isin.twse.com.tw/isin/C_public.jsp?strMode=2";
-	// 台灣證交所 取得session
-	final String twseUrl = "http://mis.twse.com.tw/stock/index.jsp";
+	// 台灣證交所 上市證券國際證券辨識號碼 http://isin.twse.com.tw
+	final String isinPage = "/isin/C_public.jsp?strMode=2";
+	// 台灣證交所 取得session http://mis.twse.com.tw
+	final String twseUrlPage = "/stock/index.jsp";
 	// 台灣證交所 個股成交資訊API
-	final String stockInfoUrl = "http://mis.twse.com.tw/stock/api/getStockInfo.jsp";
+	final String stockInfoPage = "/stock/api/getStockInfo.jsp";
 
 	public String getStock() throws IOException, ParseException {
-		URL url = new URL(isinUrl);
+		URL url = new URL(configPropertyRepository.findByCode("isinUrl").getValue() + isinPage);
 		logger.info("== Start getStock from " + url + " ==");
-		Document htmlDoc = Jsoup.parse(url, 10000); // 使用Jsoup解析網頁
+		Document htmlDoc = Jsoup.parse(url,
+				Integer.parseInt(configPropertyRepository.findByCode("timeoutMillis").getValue())); // 使用Jsoup解析網頁
 		Element htmlBody = htmlDoc.body();
 		Elements stock = htmlBody.select(".h4 tr:nth-child(2) ~ tr");
 		Integer totally = 0;
@@ -93,15 +96,18 @@ public class CrawlerService {
 	}
 
 	public String getStockInfo(String targetDate) throws Exception {
+		DateFormat df = new SimpleDateFormat("yyyyMMdd");
+		Calendar targetDateForHistory = Calendar.getInstance();
 		if (targetDate == null) {
-			DateFormat df = new SimpleDateFormat("yyyyMMdd");
-			Calendar targetDateForHistory = Calendar.getInstance();
 			targetDate = df.format(targetDateForHistory.getTime());
-			if (targetDateForHistory.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY
-					|| targetDateForHistory.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY) {
-				return targetDate + " is holiday";
-			}
 		}
+
+		targetDateForHistory.setTime(df.parse(targetDate));
+		if (targetDateForHistory.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY
+				|| targetDateForHistory.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY) {
+			return targetDate + " is holiday";
+		}
+
 		Long stocksCount = stockRepository.count();
 		// Long stocksCount = (long) 12;
 		Integer pageStart = 0;
@@ -175,12 +181,11 @@ public class CrawlerService {
 
 			} catch (Exception e) {
 				e.printStackTrace();
-				throw e;
 			}
 
 			pageStart++;
 			try {
-				Thread.sleep(5000);
+				Thread.sleep(Integer.parseInt(configPropertyRepository.findByCode("sleepMilliSeconds").getValue()));
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -271,7 +276,7 @@ public class CrawlerService {
 	}
 
 	private ResponseEntity<?> doGet(String paramString, Class<?> beanClass) {
-		RestTemplate restTemplate = new RestTemplate();
+		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory());
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("Cookie", getSessionId());
 		headers.add("Accept-Language", "zh-TW");
@@ -279,16 +284,25 @@ public class CrawlerService {
 		headers.add("Content-Type", "application/json");
 
 		HttpEntity<Object> httpEntity = new HttpEntity<Object>(headers);
-		ResponseEntity<?> twseStockInfoResponse = restTemplate.exchange(stockInfoUrl + paramString, HttpMethod.GET,
+		ResponseEntity<?> twseStockInfoResponse = restTemplate.exchange(
+				configPropertyRepository.findByCode("twseUrl").getValue() + stockInfoPage + paramString, HttpMethod.GET,
 				httpEntity, beanClass);
 		return twseStockInfoResponse;
 	}
 
 	private String getSessionId() {
-		RestTemplate restTemplate = new RestTemplate();
-		ResponseEntity<String> twseEntity = restTemplate.getForEntity(twseUrl, String.class);
+		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory());
+		ResponseEntity<String> twseEntity = restTemplate
+				.getForEntity(configPropertyRepository.findByCode("twseUrl").getValue() + twseUrlPage, String.class);
 		List<String> session = twseEntity.getHeaders().get("Set-Cookie");
 		return session.get(0).split(";")[0];
+	}
+
+	private ClientHttpRequestFactory clientHttpRequestFactory() {
+		HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
+		factory.setReadTimeout(Integer.parseInt(configPropertyRepository.findByCode("readTimeout").getValue()));
+		factory.setConnectTimeout(Integer.parseInt(configPropertyRepository.findByCode("connectTimeout").getValue()));
+		return factory;
 	}
 
 }
