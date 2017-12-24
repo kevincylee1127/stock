@@ -1,4 +1,4 @@
-package com.kevincylee.stock.entity;
+package com.kevincylee.crawler.entity;
 
 import org.springframework.data.annotation.Id;
 
@@ -6,6 +6,7 @@ public class ConfigProperty {
 
 	@Id
 	public String id;
+	public String group;
 	public String code;
 	public String value;
 	public String description;
@@ -14,8 +15,9 @@ public class ConfigProperty {
 		super();
 	}
 
-	public ConfigProperty(String code, String value) {
+	public ConfigProperty(String group, String code, String value) {
 		super();
+		this.group = group;
 		this.code = code;
 		this.value = value;
 	}
@@ -26,6 +28,14 @@ public class ConfigProperty {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public String getGroup() {
+		return group;
+	}
+
+	public void setGroup(String group) {
+		this.group = group;
 	}
 
 	public String getCode() {

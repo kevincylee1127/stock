@@ -1,4 +1,4 @@
-package com.kevincylee.stock.service;
+package com.kevincylee.crawler.service;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -30,22 +30,22 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kevincylee.stock.bean.StockInfoRequest;
-import com.kevincylee.stock.bean.StockRequest;
-import com.kevincylee.stock.bean.TwseStockInfoRequest;
-import com.kevincylee.stock.bean.TwseStockInfoResponse;
-import com.kevincylee.stock.bean.TwseStockInfoResponse.StockInfoArray;
-import com.kevincylee.stock.entity.ConfigProperty;
-import com.kevincylee.stock.entity.Stock;
-import com.kevincylee.stock.entity.StockInfoPiece;
-import com.kevincylee.stock.repository.ConfigPropertyRepository;
-import com.kevincylee.stock.repository.StockRepository;
+import com.kevincylee.crawler.bean.StockInfoRequest;
+import com.kevincylee.crawler.bean.StockRequest;
+import com.kevincylee.crawler.bean.TwseStockInfoRequest;
+import com.kevincylee.crawler.bean.TwseStockInfoResponse;
+import com.kevincylee.crawler.bean.TwseStockInfoResponse.StockInfoArray;
+import com.kevincylee.crawler.entity.ConfigProperty;
+import com.kevincylee.crawler.entity.Stock;
+import com.kevincylee.crawler.entity.StockInfoPiece;
+import com.kevincylee.crawler.repository.ConfigPropertyRepository;
+import com.kevincylee.crawler.repository.StockRepository;
 
 @Service
-public class CrawlerService {
+public class StockCrawlerService {
 
 	@Autowired
-	private StockService stockService;
+	private CommonService commonService;
 
 	@Autowired
 	private StockRepository stockRepository;
@@ -53,7 +53,7 @@ public class CrawlerService {
 	@Autowired
 	private ConfigPropertyRepository configPropertyRepository;
 
-	private static final Logger logger = LoggerFactory.getLogger(CrawlerService.class);
+	private static final Logger logger = LoggerFactory.getLogger(StockCrawlerService.class);
 
 	private final String prefix = "tse_";
 	private final String suffix = ".tw";
@@ -67,10 +67,10 @@ public class CrawlerService {
 	final String stockInfoPage = "/stock/api/getStockInfo.jsp";
 
 	public String getStock() throws IOException, ParseException {
-		URL url = new URL(configPropertyRepository.findByCode("isinUrl").getValue() + isinPage);
+		URL url = new URL(configPropertyRepository.findByGroupAndCode("Stock","isinUrl").getValue() + isinPage);
 		logger.info("== Start getStock from " + url + " ==");
 		Document htmlDoc = Jsoup.parse(url,
-				Integer.parseInt(configPropertyRepository.findByCode("timeoutMillis").getValue())); // 使用Jsoup解析網頁
+				Integer.parseInt(configPropertyRepository.findByGroupAndCode("Jsoup","timeoutMillis").getValue())); // 使用Jsoup解析網頁
 		Element htmlBody = htmlDoc.body();
 		Elements stock = htmlBody.select(".h4 tr:nth-child(2) ~ tr");
 		Integer totally = 0;
@@ -89,7 +89,7 @@ public class CrawlerService {
 			req.setOnMarketDate(infoData[3]);
 			req.setMarketType(infoData[4]);
 			req.setIndustryType(infoData[5]);
-			stockService.addStock(req);
+			commonService.addStock(req);
 			totally++;
 		}
 		return "SUCCESS!! Totally " + totally + " datas.";
@@ -111,7 +111,7 @@ public class CrawlerService {
 		Long stocksCount = stockRepository.count();
 		// Long stocksCount = (long) 12;
 		Integer pageStart = 0;
-		Integer pageSize = Integer.parseInt(configPropertyRepository.findByCode("pageSize").getValue());
+		Integer pageSize = Integer.parseInt(configPropertyRepository.findByGroupAndCode("Stock","pageSize").getValue());
 
 		while (pageStart * pageSize <= stocksCount.intValue()) {
 			Pageable pageable = new PageRequest(pageStart, pageSize);
@@ -176,7 +176,7 @@ public class CrawlerService {
 					}
 					infoReq.setStockInfoPieces(stockInfoPieces);
 
-					stockService.addStockInfo(infoReq);
+					commonService.addStockInfo(infoReq);
 				}
 
 			} catch (Exception e) {
@@ -185,7 +185,7 @@ public class CrawlerService {
 
 			pageStart++;
 			try {
-				Thread.sleep(Integer.parseInt(configPropertyRepository.findByCode("sleepMilliSeconds").getValue()));
+				Thread.sleep(Integer.parseInt(configPropertyRepository.findByGroupAndCode("Stock","sleepMilliSeconds").getValue()));
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -201,29 +201,29 @@ public class CrawlerService {
 		Calendar targetDateForHistory = Calendar.getInstance();
 		if (startDate == null) {
 			try {
-				startDate = configPropertyRepository.findByCode("startDateForHistory").getValue();
+				startDate = configPropertyRepository.findByGroupAndCode("Stock","startDateForHistory").getValue();
 				startDateForHistory.setTime(df.parse(startDate));
 			} catch (Exception e) {
 				configPropertyRepository
-						.save(new ConfigProperty("startDateForHistory", df.format(startDateForHistory.getTime())));
+						.save(new ConfigProperty("Stock","startDateForHistory", df.format(startDateForHistory.getTime())));
 			}
 		}
 
 		if (targetDate == null) {
 			try {
-				targetDate = configPropertyRepository.findByCode("targetDateForHistory").getValue();
+				targetDate = configPropertyRepository.findByGroupAndCode("Stock","targetDateForHistory").getValue();
 				targetDateForHistory.setTime(df.parse(targetDate));
 			} catch (Exception e) {
 				targetDateForHistory.add(Calendar.YEAR, -5);
 				configPropertyRepository
-						.save(new ConfigProperty("targetDateForHistory", df.format(targetDateForHistory.getTime())));
+						.save(new ConfigProperty("Stock","targetDateForHistory", df.format(targetDateForHistory.getTime())));
 			}
 		}
 
 		while (startDateForHistory.after(targetDateForHistory)) {
 			getStockInfo(df.format(startDateForHistory.getTime()));
 			startDateForHistory.add(Calendar.DATE, -1);
-			ConfigProperty startDateForHistoryConfig = configPropertyRepository.findByCode("startDateForHistory");
+			ConfigProperty startDateForHistoryConfig = configPropertyRepository.findByGroupAndCode("Stock","startDateForHistory");
 			startDateForHistoryConfig.setValue(df.format(startDateForHistory.getTime()));
 			configPropertyRepository.save(startDateForHistoryConfig);
 		}
@@ -285,7 +285,7 @@ public class CrawlerService {
 
 		HttpEntity<Object> httpEntity = new HttpEntity<Object>(headers);
 		ResponseEntity<?> twseStockInfoResponse = restTemplate.exchange(
-				configPropertyRepository.findByCode("twseUrl").getValue() + stockInfoPage + paramString, HttpMethod.GET,
+				configPropertyRepository.findByGroupAndCode("Stock","twseUrl").getValue() + stockInfoPage + paramString, HttpMethod.GET,
 				httpEntity, beanClass);
 		return twseStockInfoResponse;
 	}
@@ -293,15 +293,15 @@ public class CrawlerService {
 	private String getSessionId() {
 		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory());
 		ResponseEntity<String> twseEntity = restTemplate
-				.getForEntity(configPropertyRepository.findByCode("twseUrl").getValue() + twseUrlPage, String.class);
+				.getForEntity(configPropertyRepository.findByGroupAndCode("Stock","twseUrl").getValue() + twseUrlPage, String.class);
 		List<String> session = twseEntity.getHeaders().get("Set-Cookie");
 		return session.get(0).split(";")[0];
 	}
 
 	private ClientHttpRequestFactory clientHttpRequestFactory() {
 		HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
-		factory.setReadTimeout(Integer.parseInt(configPropertyRepository.findByCode("readTimeout").getValue()));
-		factory.setConnectTimeout(Integer.parseInt(configPropertyRepository.findByCode("connectTimeout").getValue()));
+		factory.setReadTimeout(Integer.parseInt(configPropertyRepository.findByGroupAndCode("Common","readTimeout").getValue()));
+		factory.setConnectTimeout(Integer.parseInt(configPropertyRepository.findByGroupAndCode("Common","connectTimeout").getValue()));
 		return factory;
 	}
 

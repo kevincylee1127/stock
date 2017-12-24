@@ -1,9 +1,9 @@
-package com.kevincylee.stock.bean;
+package com.kevincylee.crawler.bean;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-import com.kevincylee.stock.entity.StockInfoPiece;
+import com.kevincylee.crawler.entity.StockInfoPiece;
 
 public class StockInfoRequest {
 

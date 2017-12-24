@@ -1,4 +1,4 @@
-package com.kevincylee.stock.service;
+package com.kevincylee.crawler.service;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -11,22 +11,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.kevincylee.stock.bean.ConfingPropertyRequest;
-import com.kevincylee.stock.bean.StockInfoRequest;
-import com.kevincylee.stock.bean.StockRequest;
-import com.kevincylee.stock.entity.ConfigProperty;
-import com.kevincylee.stock.entity.Stock;
-import com.kevincylee.stock.entity.StockIndustryType;
-import com.kevincylee.stock.entity.StockInfo;
-import com.kevincylee.stock.entity.StockInfoPiece;
-import com.kevincylee.stock.repository.ConfigPropertyRepository;
-import com.kevincylee.stock.repository.IndustryTypeRepository;
-import com.kevincylee.stock.repository.StockInfoPieceRepository;
-import com.kevincylee.stock.repository.StockInfoRepository;
-import com.kevincylee.stock.repository.StockRepository;
+import com.kevincylee.crawler.bean.ConfingPropertyRequest;
+import com.kevincylee.crawler.bean.CurrencyInfoRequest;
+import com.kevincylee.crawler.bean.StockInfoRequest;
+import com.kevincylee.crawler.bean.StockRequest;
+import com.kevincylee.crawler.entity.ConfigProperty;
+import com.kevincylee.crawler.entity.CurrencyInfo;
+import com.kevincylee.crawler.entity.Stock;
+import com.kevincylee.crawler.entity.StockIndustryType;
+import com.kevincylee.crawler.entity.StockInfo;
+import com.kevincylee.crawler.entity.StockInfoPiece;
+import com.kevincylee.crawler.repository.ConfigPropertyRepository;
+import com.kevincylee.crawler.repository.CurrencyInfoRepository;
+import com.kevincylee.crawler.repository.IndustryTypeRepository;
+import com.kevincylee.crawler.repository.StockInfoPieceRepository;
+import com.kevincylee.crawler.repository.StockInfoRepository;
+import com.kevincylee.crawler.repository.StockRepository;
 
 @Service
-public class StockService {
+public class CommonService {
 
 	@Autowired
 	private StockRepository stockRepository;
@@ -42,6 +45,9 @@ public class StockService {
 
 	@Autowired
 	private ConfigPropertyRepository configPropertyRepository;
+
+	@Autowired
+	CurrencyInfoRepository currencyInfoRepository;
 
 	public @ResponseBody String addStock(StockRequest requestBody) throws ParseException {
 		// 取得股票資訊 檢查重複
@@ -120,13 +126,37 @@ public class StockService {
 	}
 
 	public String addConfingProperty(ConfingPropertyRequest requestBody) {
-		ConfigProperty configProperty = configPropertyRepository.findByCode(requestBody.getCode());
+		ConfigProperty configProperty = configPropertyRepository.findByGroupAndCode(requestBody.getGroup(),requestBody.getCode());
 		if (configProperty == null) {
-			configProperty = new ConfigProperty(requestBody.getCode(), requestBody.getValue());
+			configProperty = new ConfigProperty(requestBody.getGroup(),requestBody.getCode(), requestBody.getValue());
 		} else {
 			configProperty.setValue(requestBody.getValue());
 		}
 		configPropertyRepository.save(configProperty);
+		return "SUCCESS";
+	}
+
+	public @ResponseBody String addCurrencyInfo(CurrencyInfoRequest requestBody) throws ParseException {
+
+		DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+		Date transactionDate = dateFormat.parse(requestBody.getTransactionDate());
+
+		CurrencyInfo currencyInfo = currencyInfoRepository
+				.findByCurrencyTypeAndTransactionDate(requestBody.getCurrencyType(), transactionDate);
+		if (currencyInfo == null) {
+			currencyInfo = new CurrencyInfo();
+		}
+
+		currencyInfo.setCurrencyName(requestBody.getCurrencyName());
+		currencyInfo.setCurrencyType(requestBody.getCurrencyType());
+		currencyInfo.setTransactionDate(transactionDate);
+		currencyInfo.setPriceOfCashBuying(requestBody.getPriceOfCashBuying());
+		currencyInfo.setPriceOfCashSelling(requestBody.getPriceOfCashSelling());
+		currencyInfo.setPriceOfSpotBuying(requestBody.getPriceOfSpotBuying());
+		currencyInfo.setPriceOfSpotSelling(requestBody.getPriceOfSpotSelling());
+
+		currencyInfoRepository.save(currencyInfo);
+
 		return "SUCCESS";
 	}
 

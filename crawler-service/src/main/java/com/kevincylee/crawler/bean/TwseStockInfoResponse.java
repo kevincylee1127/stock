@@ -1,4 +1,4 @@
-package com.kevincylee.stock.bean;
+package com.kevincylee.crawler.bean;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

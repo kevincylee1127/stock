@@ -1,4 +1,4 @@
-package com.kevincylee.stock.entity;
+package com.kevincylee.crawler.entity;
 
 import org.springframework.data.annotation.Id;
 

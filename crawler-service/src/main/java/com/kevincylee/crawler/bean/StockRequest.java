@@ -1,4 +1,4 @@
-package com.kevincylee.stock.bean;
+package com.kevincylee.crawler.bean;
 
 public class StockRequest {
 

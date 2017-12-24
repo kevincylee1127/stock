@@ -1,4 +1,4 @@
-package com.kevincylee.stock.bean;
+package com.kevincylee.crawler.bean;
 
 import java.util.Calendar;
 

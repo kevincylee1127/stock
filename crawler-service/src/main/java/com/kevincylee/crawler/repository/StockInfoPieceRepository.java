@@ -1,11 +1,11 @@
-package com.kevincylee.stock.repository;
+package com.kevincylee.crawler.repository;
 
 import java.util.Date;
 import java.util.List;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-import com.kevincylee.stock.entity.StockInfoPiece;
+import com.kevincylee.crawler.entity.StockInfoPiece;
 
 public interface StockInfoPieceRepository extends MongoRepository<StockInfoPiece, String> {
 

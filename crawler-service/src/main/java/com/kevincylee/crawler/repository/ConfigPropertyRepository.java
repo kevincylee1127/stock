@@ -1,9 +1,9 @@
-package com.kevincylee.stock.repository;
+package com.kevincylee.crawler.repository;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-import com.kevincylee.stock.entity.ConfigProperty;
+import com.kevincylee.crawler.entity.ConfigProperty;
 
 public interface ConfigPropertyRepository extends MongoRepository<ConfigProperty, String> {
-	ConfigProperty findByCode(String code);
+	ConfigProperty findByGroupAndCode(String group, String code);
 }

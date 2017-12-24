@@ -1,4 +1,4 @@
-package com.kevincylee.stock.entity;
+package com.kevincylee.crawler.entity;
 
 import java.math.BigDecimal;
 import java.util.Date;

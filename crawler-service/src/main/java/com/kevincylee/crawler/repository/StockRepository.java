@@ -1,8 +1,8 @@
-package com.kevincylee.stock.repository;
+package com.kevincylee.crawler.repository;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-import com.kevincylee.stock.entity.Stock;
+import com.kevincylee.crawler.entity.Stock;
 
 public interface StockRepository extends MongoRepository<Stock, String> {
 
