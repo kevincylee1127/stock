@@ -65,7 +65,7 @@ public class CurrencyCrawlerService {
 			String[] infoData = currency.get(i).text().trim().replaceAll("\\s*　\\s*", " ").split("\\s");
 			CurrencyInfoRequest req = new CurrencyInfoRequest();
 			req.setCurrencyName(infoData[0]);
-			req.setCurrencyType(infoData[1]);
+			req.setCurrencyType(infoData[1].replaceAll("\\(|\\)", ""));
 			req.setTransactionDate(targetDate);
 			req.setPriceOfCashBuying(checkNullForBigDecimal(infoData[4]));
 			req.setPriceOfCashSelling(checkNullForBigDecimal(infoData[5]));
@@ -111,6 +111,12 @@ public class CurrencyCrawlerService {
 					"startDateForHistory");
 			startDateForHistoryConfig.setValue(df.format(startDateForHistory.getTime()));
 			configPropertyRepository.save(startDateForHistoryConfig);
+			
+			try {
+				Thread.sleep(Integer.parseInt(configPropertyRepository.findByGroupAndCode("Currency","sleepMilliSeconds").getValue()));
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 
 		return "SUCCESS!!";
